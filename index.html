@@ -23,14 +23,14 @@
       color: #fff;
       font-size: 2rem;
       text-align: center;
-      padding: 20px;
+      padding: 15px;
       text-shadow: 0 0 20px #ff6b6b;
     }
     
     #gameArea {
       position: relative;
       width: 100vw;
-      height: calc(100vh - 80px);
+      height: calc(100vh - 140px);
     }
     
     .circle {
@@ -39,6 +39,14 @@
       cursor: pointer;
       animation: fadeOut 2s forwards;
       box-shadow: 0 0 20px currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #fff;
+      text-shadow: 0 0 5px #000, 0 0 10px rgba(0,0,0,0.5);
+      user-select: none;
     }
     
     @keyframes fadeOut {
@@ -77,7 +85,7 @@
     
     #score {
       position: fixed;
-      top: 80px;
+      top: 60px;
       right: 20px;
       color: #fff;
       font-size: 2rem;
@@ -85,7 +93,32 @@
       text-shadow: 0 0 10px #00ff88;
     }
     
-    #startScreen, #gameOverScreen {
+    #coins {
+      position: fixed;
+      top: 60px;
+      left: 20px;
+      color: #ffd700;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px #ffd700;
+    }
+    
+    #shopBtn {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+      color: #1a1a2e;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    }
+    
+    #startScreen, #gameOverScreen, #shopScreen {
       position: fixed;
       top: 0;
       left: 0;
@@ -100,7 +133,7 @@
       z-index: 100;
     }
     
-    #gameOverScreen {
+    #gameOverScreen, #shopScreen {
       display: none;
     }
     
@@ -132,17 +165,97 @@
       color: #00ff88;
       margin: 20px 0;
     }
+    
+    /* Shop Styles */
+    #shopScreen h2 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      color: #ffd700;
+      text-shadow: 0 0 20px #ffd700;
+    }
+    
+    .shop-item {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #444;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 10px;
+      width: 280px;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    
+    .shop-item:hover {
+      transform: scale(1.05);
+      border-color: #ffd700;
+    }
+    
+    .shop-item h3 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+    
+    .shop-item .price {
+      color: #ffd700;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    
+    .shop-item .desc {
+      color: #aaa;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+    
+    .shop-item button {
+      background: #00ff88;
+      color: #1a1a2e;
+      border: none;
+      padding: 10px 25px;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .shop-item button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    
+    .owned {
+      background: #2a2a4a !important;
+      border-color: #00ff88 !important;
+    }
+    
+    .close-shop {
+      margin-top: 30px;
+      background: #ff6b6b;
+    }
+    
+    #timeLeft {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <h1>🎯 Pop the Circles!</h1>
+  <button id="shopBtn" onclick="openShop()">🏪 Shop</button>
   <div id="gameArea"></div>
-  <div id="score">0</div>
+  <div id="coins">🪙 0</div>
+  <div id="score">Score: 0</div>
+  <div id="timeLeft">⏱️ 30s</div>
   
   <div id="startScreen">
     <div style="font-size: 4rem; margin-bottom: 20px;">🟢⚪🔴</div>
     <div style="font-size: 1.5rem;">Click the circles before they fade!</div>
-    <div class="instructions">Be fast - you have 2 seconds per circle!</div>
+    <div class="instructions">Bigger circles = more points!</div>
     <button class="btn" onclick="startGame()">PLAY</button>
   </div>
   
@@ -150,55 +263,173 @@
     <div style="font-size: 4rem; margin-bottom: 20px;">⏰</div>
     <div>Time's Up!</div>
     <div id="finalScore">0</div>
-    <div class="instructions">Circles popped</div>
+    <div class="instructions">points earned</div>
+    <div id="coinsEarned" style="color: #ffd700; font-size: 1.2rem; margin-top: 10px;">+0 🪙</div>
     <button class="btn" onclick="startGame()">PLAY AGAIN</button>
+  </div>
+  
+  <div id="shopScreen">
+    <h2>🏪 Power-Up Shop</h2>
+    <div class="shop-item" id="item-extraTime">
+      <h3>⏰ Extra Time</h3>
+      <div class="price">🪙 50</div>
+      <div class="desc">+10 seconds to game timer</div>
+      <button onclick="buyItem('extraTime', 50)">BUY</button>
+    </div>
+    <div class="shop-item" id="item-slowDown">
+      <h3>🐢 Slow Motion</h3>
+      <div class="price">🪙 75</div>
+      <div class="desc">Circles fade 50% slower</div>
+      <button onclick="buyItem('slowDown', 75)">BUY</button>
+    </div>
+    <div class="shop-item" id="item-doublePoints">
+      <h3>✨ 2x Points</h3>
+      <div class="price">🪙 100</div>
+      <div class="desc">Double points for 1 game</div>
+      <button onclick="buyItem('doublePoints', 100)">BUY</button>
+    </div>
+    <div class="shop-item" id="item-biggerCircles">
+      <h3>🔵 Bigger Circles</h3>
+      <div class="price">🪙 60</div>
+      <div class="desc">Circles are 50% bigger</div>
+      <button onclick="buyItem('biggerCircles', 60)">BUY</button>
+    </div>
+    <button class="btn close-shop" onclick="closeShop()">CLOSE</button>
   </div>
 
   <script>
     const gameArea = document.getElementById('gameArea');
     const scoreDisplay = document.getElementById('score');
+    const coinsDisplay = document.getElementById('coins');
+    const timeDisplay = document.getElementById('timeLeft');
     const startScreen = document.getElementById('startScreen');
     const gameOverScreen = document.getElementById('gameOverScreen');
+    const shopScreen = document.getElementById('shopScreen');
     const finalScoreDisplay = document.getElementById('finalScore');
+    const coinsEarnedDisplay = document.getElementById('coinsEarned');
     
     let score = 0;
+    let coins = parseInt(localStorage.getItem('circlePopCoins')) || 0;
     let isGameRunning = false;
     let spawnTimer;
     let gameTimer;
-    let gameDuration = 30; // seconds
+    let gameDuration = 30;
+    let timeRemaining = 30;
+    
+    // Power-ups
+    let powerUps = {
+      extraTime: parseInt(localStorage.getItem('powerUp_extraTime')) || 0,
+      slowDown: parseInt(localStorage.getItem('powerUp_slowDown')) || 0,
+      doublePoints: parseInt(localStorage.getItem('powerUp_doublePoints')) || 0,
+      biggerCircles: parseInt(localStorage.getItem('powerUp_biggerCircles')) || 0
+    };
     
     const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3', '#a8d8ea'];
     
+    // Update displays
+    coinsDisplay.textContent = '🪙 ' + coins;
+    updateShopButtons();
+    
+    function updateShopButtons() {
+      for (let item in powerUps) {
+        const btn = document.querySelector('#item-' + item + ' button');
+        if (powerUps[item] > 0) {
+          btn.textContent = 'OWNED (' + powerUps[item] + ')';
+          btn.disabled = true;
+          document.getElementById('item-' + item).classList.add('owned');
+        }
+      }
+    }
+    
+    function openShop() {
+      if (isGameRunning) return;
+      shopScreen.style.display = 'flex';
+    }
+    
+    function closeShop() {
+      shopScreen.style.display = 'none';
+    }
+    
+    function buyItem(item, price) {
+      if (coins >= price && powerUps[item] === 0) {
+        coins -= price;
+        powerUps[item] = 1;
+        localStorage.setItem('circlePopCoins', coins);
+        localStorage.setItem('powerUp_' + item, 1);
+        coinsDisplay.textContent = '🪙 ' + coins;
+        updateShopButtons();
+      }
+    }
+    
     function startGame() {
+      // Consume power-ups
+      let timeBonus = powerUps.extraTime * 10;
+      let slowFactor = powerUps.slowDown ? 2 : 1;
+      let pointMultiplier = powerUps.doublePoints ? 2 : 1;
+      let sizeMultiplier = powerUps.biggerCircles ? 1.5 : 1;
+      
+      // Reset single-use power-ups
+      if (powerUps.doublePoints) {
+        powerUps.doublePoints = 0;
+        localStorage.setItem('powerUp_doublePoints', 0);
+      }
+      if (powerUps.extraTime) {
+        powerUps.extraTime = 0;
+        localStorage.setItem('powerUp_extraTime', 0);
+      }
+      if (powerUps.slowDown) {
+        powerUps.slowDown = 0;
+        localStorage.setItem('powerUp_slowDown', 0);
+      }
+      if (powerUps.biggerCircles) {
+        powerUps.biggerCircles = 0;
+        localStorage.setItem('powerUp_biggerCircles', 0);
+      }
+      updateShopButtons();
+      
       score = 0;
-      scoreDisplay.textContent = '0';
+      scoreDisplay.textContent = 'Score: 0';
       isGameRunning = true;
+      gameDuration = 30 + timeBonus;
+      timeRemaining = gameDuration;
+      timeDisplay.textContent = '⏱️ ' + timeRemaining + 's';
       
       startScreen.style.display = 'none';
       gameOverScreen.style.display = 'none';
+      shopScreen.style.display = 'none';
       
       // Clear any existing circles
       gameArea.innerHTML = '';
       
       // Start spawning circles
-      spawnCircle();
+      spawnCircle(slowFactor, sizeMultiplier, pointMultiplier);
       
       // Game timer
-      setTimeout(() => {
-        endGame();
-      }, gameDuration * 1000);
+      gameTimer = setInterval(() => {
+        timeRemaining--;
+        timeDisplay.textContent = '⏱️ ' + timeRemaining + 's';
+        if (timeRemaining <= 0) {
+          endGame();
+        }
+      }, 1000);
     }
     
-    function spawnCircle() {
+    function spawnCircle(slowFactor, sizeMultiplier, pointMultiplier) {
       if (!isGameRunning) return;
       
       const circle = document.createElement('div');
       circle.className = 'circle';
       
-      // Random size (50-100px)
-      const size = 50 + Math.random() * 50;
+      // Random size (50-100px) with power-up
+      const baseSize = 50 + Math.random() * 50;
+      const size = baseSize * sizeMultiplier;
       circle.style.width = size + 'px';
       circle.style.height = size + 'px';
+      
+      // Points based on size (1-5)
+      const points = Math.ceil((size - 50) / 12.5);
+      circle.dataset.points = points;
+      circle.textContent = points;
       
       // Random position
       const maxX = gameArea.clientWidth - size;
@@ -211,12 +442,18 @@
       circle.style.backgroundColor = color;
       circle.style.color = color;
       
+      // Adjust animation speed for slow power-up
+      if (slowFactor > 1) {
+        circle.style.animationDuration = (2 * slowFactor) + 's';
+      }
+      
       // Click handler
       circle.onclick = function() {
         if (!isGameRunning) return;
         circle.classList.add('popped');
-        score++;
-        scoreDisplay.textContent = score;
+        const earned = parseInt(circle.dataset.points) * pointMultiplier;
+        score += earned;
+        scoreDisplay.textContent = 'Score: ' + score;
         
         // Remove after pop animation
         setTimeout(() => {
@@ -234,15 +471,24 @@
       gameArea.appendChild(circle);
       
       // Spawn next circle (faster as game progresses)
-      const spawnDelay = 600 + Math.random() * 400;
-      spawnTimer = setTimeout(spawnCircle, spawnDelay);
+      const baseDelay = 600 + Math.random() * 400;
+      const spawnDelay = slowFactor > 1 ? baseDelay * 1.5 : baseDelay;
+      spawnTimer = setTimeout(() => spawnCircle(slowFactor, sizeMultiplier, pointMultiplier), spawnDelay);
     }
     
     function endGame() {
       isGameRunning = false;
       clearTimeout(spawnTimer);
+      clearInterval(gameTimer);
+      
+      // Coins = 10% of score
+      const coinsEarned = Math.floor(score / 10);
+      coins += coinsEarned;
+      localStorage.setItem('circlePopCoins', coins);
+      coinsDisplay.textContent = '🪙 ' + coins;
       
       finalScoreDisplay.textContent = score;
+      coinsEarnedDisplay.textContent = '+' + coinsEarned + ' 🪙';
       gameOverScreen.style.display = 'flex';
     }
   </script>
