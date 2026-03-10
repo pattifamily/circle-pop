@@ -138,10 +138,15 @@
       display: none;
     }
     
+    html, body {
+      overflow: hidden;
+    }
+    
     #shopScreen {
       justify-content: flex-start;
-      padding-top: 60px;
+      padding-top: 40px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     
     .btn {
