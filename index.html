@@ -364,6 +364,24 @@
       <div class="desc">Circles are 50% bigger</div>
       <button onclick="buyItem('biggerCircles', 60)">BUY</button>
     </div>
+    <div class="shop-item" id="item-freeze">
+      <h3>❄️ Freeze Time</h3>
+      <div class="price">🪙 80</div>
+      <div class="desc">Pause circles for 3 seconds</div>
+      <button onclick="buyItem('freeze', 80)">BUY</button>
+    </div>
+    <div class="shop-item" id="item-magnet">
+      <h3>🧲 Auto Pop</h3>
+      <div class="price">🪙 120</div>
+      <div class="desc">Auto-pop 3 circles per game</div>
+      <button onclick="buyItem('magnet', 120)">BUY</button>
+    </div>
+    <div class="shop-item" id="item-ghost">
+      <h3>👻 Ghost Mode</h3>
+      <div class="price">🪙 150</div>
+      <div class="desc">Miss 3 circles without losing</div>
+      <button onclick="buyItem('ghost', 150)">BUY</button>
+    </div>
     <button class="btn close-shop" onclick="closeShop()">CLOSE</button>
   </div>
 
@@ -391,7 +409,10 @@
       extraTime: parseInt(localStorage.getItem('powerUp_extraTime')) || 0,
       slowDown: parseInt(localStorage.getItem('powerUp_slowDown')) || 0,
       doublePoints: parseInt(localStorage.getItem('powerUp_doublePoints')) || 0,
-      biggerCircles: parseInt(localStorage.getItem('powerUp_biggerCircles')) || 0
+      biggerCircles: parseInt(localStorage.getItem('powerUp_biggerCircles')) || 0,
+      freeze: parseInt(localStorage.getItem('powerUp_freeze')) || 0,
+      magnet: parseInt(localStorage.getItem('powerUp_magnet')) || 0,
+      ghost: parseInt(localStorage.getItem('powerUp_ghost')) || 0
     };
     
     const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3', '#a8d8ea'];
@@ -445,6 +466,9 @@
       let slowFactor = powerUps.slowDown ? 2 : 1;
       let pointMultiplier = powerUps.doublePoints ? 2 : 1;
       let sizeMultiplier = powerUps.biggerCircles ? 1.5 : 1;
+      let freezeUsed = 0;
+      let magnetUses = powerUps.magnet || 0;
+      let ghostMisses = powerUps.ghost || 0;
       
       // Reset single-use power-ups
       if (powerUps.doublePoints) {
@@ -463,6 +487,18 @@
         powerUps.biggerCircles = 0;
         localStorage.setItem('powerUp_biggerCircles', 0);
       }
+      if (powerUps.freeze) {
+        powerUps.freeze = 0;
+        localStorage.setItem('powerUp_freeze', 0);
+      }
+      if (powerUps.magnet) {
+        powerUps.magnet = 0;
+        localStorage.setItem('powerUp_magnet', 0);
+      }
+      if (powerUps.ghost) {
+        powerUps.ghost = 0;
+        localStorage.setItem('powerUp_ghost', 0);
+      }
       updateShopButtons();
       
       score = 0;
@@ -480,7 +516,7 @@
       gameArea.innerHTML = '';
       
       // Start spawning circles
-      spawnCircle(slowFactor, sizeMultiplier, pointMultiplier);
+      spawnCircle(slowFactor, sizeMultiplier, pointMultiplier, freezeUsed, magnetUses, ghostMisses);
       
       // Game timer
       gameTimer = setInterval(() => {
@@ -492,7 +528,7 @@
       }, 1000);
     }
     
-    function spawnCircle(slowFactor, sizeMultiplier, pointMultiplier) {
+    function spawnCircle(slowFactor, sizeMultiplier, pointMultiplier, freezeUsed, magnetUses, ghostMisses) {
       if (!isGameRunning) return;
       
       const circle = document.createElement('div');
@@ -551,7 +587,7 @@
       // Spawn next circle (faster as game progresses)
       const baseDelay = 600 + Math.random() * 400;
       const spawnDelay = slowFactor > 1 ? baseDelay * 1.5 : baseDelay;
-      spawnTimer = setTimeout(() => spawnCircle(slowFactor, sizeMultiplier, pointMultiplier), spawnDelay);
+      spawnTimer = setTimeout(() => spawnCircle(slowFactor, sizeMultiplier, pointMultiplier, freezeUsed, magnetUses, ghostMisses), spawnDelay);
     }
     
     function endGame() {
