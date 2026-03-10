@@ -207,6 +207,14 @@
       text-shadow: 0 0 15px #ffd700;
     }
     
+    #shopCoins {
+      color: #ffd700;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px #ffd700;
+    }
+    
     .shop-item {
       background: rgba(255, 255, 255, 0.1);
       border: 2px solid #444;
@@ -317,6 +325,7 @@
   
   <div id="shopOverlay"></div>
   <div id="shopScreen">
+    <div id="shopCoins">🪙 0</div>
     <h2>🏪 Power-Up Shop</h2>
     <div class="shop-item" id="item-extraTime">
       <h3>⏰ Extra Time</h3>
@@ -391,6 +400,7 @@
     
     function openShop() {
       if (isGameRunning) return;
+      document.getElementById('shopCoins').textContent = '🪙 ' + coins;
       document.getElementById('shopOverlay').style.display = 'block';
       shopScreen.style.display = 'flex';
     }
