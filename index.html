@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Pop the Circles!</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    
+    h1 {
+      color: #fff;
+      font-size: 2rem;
+      text-align: center;
+      padding: 20px;
+      text-shadow: 0 0 20px #ff6b6b;
+    }
+    
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 80px);
+    }
+    
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      animation: fadeOut 2s forwards;
+      box-shadow: 0 0 20px currentColor;
+    }
+    
+    @keyframes fadeOut {
+      0% {
+        opacity: 1;
+        transform: scale(0);
+      }
+      20% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.2);
+      }
+    }
+    
+    .popped {
+      animation: pop 0.2s forwards !important;
+    }
+    
+    @keyframes pop {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+    
+    #score {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      color: #fff;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px #00ff88;
+    }
+    
+    #startScreen, #gameOverScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      z-index: 100;
+    }
+    
+    #gameOverScreen {
+      display: none;
+    }
+    
+    .btn {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+      color: #fff;
+      border: none;
+      padding: 20px 50px;
+      font-size: 1.5rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+      transition: transform 0.2s;
+    }
+    
+    .btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .instructions {
+      color: #aaa;
+      margin-top: 15px;
+      font-size: 1.1rem;
+    }
+    
+    #finalScore {
+      font-size: 3rem;
+      color: #00ff88;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Pop the Circles!</h1>
+  <div id="gameArea"></div>
+  <div id="score">0</div>
+  
+  <div id="startScreen">
+    <div style="font-size: 4rem; margin-bottom: 20px;">🟢⚪🔴</div>
+    <div style="font-size: 1.5rem;">Click the circles before they fade!</div>
+    <div class="instructions">Be fast - you have 2 seconds per circle!</div>
+    <button class="btn" onclick="startGame()">PLAY</button>
+  </div>
+  
+  <div id="gameOverScreen">
+    <div style="font-size: 4rem; margin-bottom: 20px;">⏰</div>
+    <div>Time's Up!</div>
+    <div id="finalScore">0</div>
+    <div class="instructions">Circles popped</div>
+    <button class="btn" onclick="startGame()">PLAY AGAIN</button>
+  </div>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const scoreDisplay = document.getElementById('score');
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    
+    let score = 0;
+    let isGameRunning = false;
+    let spawnTimer;
+    let gameTimer;
+    let gameDuration = 30; // seconds
+    
+    const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3', '#a8d8ea'];
+    
+    function startGame() {
+      score = 0;
+      scoreDisplay.textContent = '0';
+      isGameRunning = true;
+      
+      startScreen.style.display = 'none';
+      gameOverScreen.style.display = 'none';
+      
+      // Clear any existing circles
+      gameArea.innerHTML = '';
+      
+      // Start spawning circles
+      spawnCircle();
+      
+      // Game timer
+      setTimeout(() => {
+        endGame();
+      }, gameDuration * 1000);
+    }
+    
+    function spawnCircle() {
+      if (!isGameRunning) return;
+      
+      const circle = document.createElement('div');
+      circle.className = 'circle';
+      
+      // Random size (50-100px)
+      const size = 50 + Math.random() * 50;
+      circle.style.width = size + 'px';
+      circle.style.height = size + 'px';
+      
+      // Random position
+      const maxX = gameArea.clientWidth - size;
+      const maxY = gameArea.clientHeight - size;
+      circle.style.left = Math.random() * maxX + 'px';
+      circle.style.top = Math.random() * maxY + 'px';
+      
+      // Random color
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      circle.style.backgroundColor = color;
+      circle.style.color = color;
+      
+      // Click handler
+      circle.onclick = function() {
+        if (!isGameRunning) return;
+        circle.classList.add('popped');
+        score++;
+        scoreDisplay.textContent = score;
+        
+        // Remove after pop animation
+        setTimeout(() => {
+          circle.remove();
+        }, 200);
+      };
+      
+      // Remove when animation ends (missed!)
+      circle.addEventListener('animationend', function() {
+        if (circle.parentNode && !circle.classList.contains('popped')) {
+          circle.remove();
+        }
+      });
+      
+      gameArea.appendChild(circle);
+      
+      // Spawn next circle (faster as game progresses)
+      const spawnDelay = 600 + Math.random() * 400;
+      spawnTimer = setTimeout(spawnCircle, spawnDelay);
+    }
+    
+    function endGame() {
+      isGameRunning = false;
+      clearTimeout(spawnTimer);
+      
+      finalScoreDisplay.textContent = score;
+      gameOverScreen.style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
